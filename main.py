@@ -13,7 +13,7 @@ import torch.backends.cudnn as cudnn
 
 #from vocab import  VocabBuilder, GloveVocabBuilder
 from vocab import  VocabBuilder
-from dataloader import TextClassDataLoader
+from dataloader import TextClassDataLoader, TextClassDataLoader_multi
 from model import RNN
 from util import AverageMeter, accuracy
 from util import adjust_learning_rate
@@ -42,6 +42,7 @@ parser.add_argument('--rnn', default='LSTM', choices=['LSTM', 'GRU'], help='rnn 
 parser.add_argument('--mean_seq', default=False, action='store_true', help='use mean of rnn output')
 parser.add_argument('--clip', type=float, default=0.25, help='gradient clipping')
 parser.add_argument('-m','--model', default='default', help='path to checkpoint')
+parser.add_argument('--multi_label', default=False, action='store_true', help='multi label classification')
 args = parser.parse_args()
 
 
@@ -69,8 +70,12 @@ print('args: ',args)
 # create trainer
 print("===> creating dataloaders ...")
 end = time.time()
-train_loader = TextClassDataLoader(os.path.join(args.data, 'train.tsv'), d_word_index, batch_size=args.batch_size)
-val_loader = TextClassDataLoader(os.path.join(args.data, 'val.tsv'), d_word_index, batch_size=args.batch_size)
+if args.multi_label:
+    train_loader = TextClassDataLoader_multi(os.path.join(args.data, 'train.csv'), d_word_index, batch_size=args.batch_size)
+    val_loader = TextClassDataLoader_multi(os.path.join(args.data, 'val.csv'), d_word_index, batch_size=args.batch_size)
+else:
+    train_loader = TextClassDataLoader(os.path.join(args.data, 'train.tsv'), d_word_index, batch_size=args.batch_size)
+    val_loader = TextClassDataLoader(os.path.join(args.data, 'val.tsv'), d_word_index, batch_size=args.batch_size)
 print('===> dataloader creatin: {t:.3f}'.format(t=time.time()-end))
 
 

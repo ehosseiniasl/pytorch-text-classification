@@ -28,7 +28,10 @@ class VocabBuilder(object):
             dict: {word_n :count_n, ...}
 
         """
-        df = pd.read_csv(path_file, delimiter='\t')
+        if path_file.ends_with('tsv'):
+            df = pd.read_csv(path_file, delimiter='\t')
+        else:
+            df = pd.read_csv(path_file, delimiter=',')
         # tokenize
         #df['body'] = df['body'].apply(tokenizer)
         df['recipedetail'] = df['recipedetail'].apply(tokenizer)
