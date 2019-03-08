@@ -28,15 +28,15 @@ class VocabBuilder(object):
             dict: {word_n :count_n, ...}
 
         """
-        if path_file.ends_with('tsv'):
+        if path_file.endswith('tsv'):
             df = pd.read_csv(path_file, delimiter='\t')
         else:
             df = pd.read_csv(path_file, delimiter=',')
         # tokenize
         #df['body'] = df['body'].apply(tokenizer)
-        df['recipedetail'] = df['recipedetail'].apply(tokenizer)
+        df['recipedetails'] = df['recipedetails'].apply(tokenizer)
         # count
-        word_count = Counter([tkn for sample in df['recipedetail'].values.tolist() for tkn in sample])
+        word_count = Counter([tkn for sample in df['recipedetails'].values.tolist() for tkn in sample])
         print('Original Vocab size:{}'.format(len(word_count)))
         return word_count
 

@@ -70,8 +70,9 @@ def accuracy(output, target, topk=(1,)):
 def accuracy_thresh(y_pred, y_true, thresh=0.5, sigmoid=True):
     "Compute accuracy when `y_pred` and `y_true` are the same size."
     if sigmoid: y_pred = y_pred.sigmoid()
-#     return ((y_pred>thresh)==y_true.byte()).float().mean().item()
-    return np.mean(((y_pred>thresh)==y_true.byte()).float().cpu().numpy(), axis=1).sum()
+    acc = ((y_pred>thresh)==y_true.byte()).float().mean().item()
+    #acc = np.mean(((y_pred>thresh)==y_true.byte()).float().cpu().numpy(), axis=1).sum()
+    return acc
 
 def adjust_learning_rate(lr, optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 8 epochs"""

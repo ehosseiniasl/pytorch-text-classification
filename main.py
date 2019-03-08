@@ -15,7 +15,7 @@ import torch.backends.cudnn as cudnn
 from vocab import  VocabBuilder
 from dataloader import TextClassDataLoader, TextClassDataLoader_multi
 from model import RNN
-from util import AverageMeter, accuracy
+from util import AverageMeter, accuracy, accuracy_thresh
 from util import adjust_learning_rate
 import ipdb
 
@@ -56,7 +56,14 @@ v_builder, d_word_index, embed = None, None, None
 #    d_word_index, embed = v_builder.get_word_index()
 #    args.embedding_size = embed.size(1)
 #else:
-v_builder = VocabBuilder(path_file=os.path.join(args.data, 'train.tsv'))
+if args.multi_label:
+    train_file = os.path.join(args.data, 'train.csv')
+    val_file = os.path.join(args.data, 'val.csv')
+else:
+    train_file = os.path.join(args.data, 'train.tsv')
+    val_file = os.path.join(args.data, 'val.tsv')
+    
+v_builder = VocabBuilder(path_file=train_file)
 d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
 
 model_dir = os.path.join('checkpoints', args.model)
@@ -70,12 +77,8 @@ print('args: ',args)
 # create trainer
 print("===> creating dataloaders ...")
 end = time.time()
-if args.multi_label:
-    train_loader = TextClassDataLoader_multi(os.path.join(args.data, 'train.csv'), d_word_index, batch_size=args.batch_size)
-    val_loader = TextClassDataLoader_multi(os.path.join(args.data, 'val.csv'), d_word_index, batch_size=args.batch_size)
-else:
-    train_loader = TextClassDataLoader(os.path.join(args.data, 'train.tsv'), d_word_index, batch_size=args.batch_size)
-    val_loader = TextClassDataLoader(os.path.join(args.data, 'val.tsv'), d_word_index, batch_size=args.batch_size)
+train_loader = TextClassDataLoader_multi(train_file, d_word_index, batch_size=args.batch_size)
+val_loader = TextClassDataLoader_multi(val_file, d_word_index, batch_size=args.batch_size)
 print('===> dataloader creatin: {t:.3f}'.format(t=time.time()-end))
 
 
@@ -90,7 +93,11 @@ print(model)
 # optimizer and loss
 optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.weight_decay)
 
-criterion = nn.CrossEntropyLoss()
+if args.multi_label:
+    criterion = nn.BCEWithLogitsLoss()
+else:
+    criterion = nn.CrossEntropyLoss()
+
 print(optimizer)
 print(criterion)
 
@@ -122,11 +129,15 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # compute output
         output = model(input, seq_lengths)
         loss = criterion(output, target)
-
+        
         # measure accuracy and record loss
-        prec1 = accuracy(output.data, target, topk=(1,))
+        if args.multi_label:
+            prec1 = accuracy_thresh(output.data, target)
+            top1.update(prec1, input.size(0))
+        else:
+            prec1 = accuracy(output.data, target, topk=(1,))
+            top1.update(prec1[0][0], input.size(0))
         losses.update(loss.data, input.size(0))
-        top1.update(prec1[0][0], input.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -165,10 +176,16 @@ def test(val_loader, model, criterion):
         output = model(input,seq_lengths)
         loss = criterion(output, target)
 
+        if args.multi_label:
+            prec1 = accuracy_thresh(output.data, target)
+            top1.update(prec1, input.size(0))
+        else:
+            prec1 = accuracy(output.data, target, topk=(1,))
+            top1.update(prec1[0][0], input.size(0))
         # measure accuracy and record loss
-        prec1 = accuracy(output.data, target, topk=(1,))
+        #prec1 = accuracy(output.data, target, topk=(1,))
         losses.update(loss.data, input.size(0))
-        top1.update(prec1[0][0], input.size(0))
+        #top1.update(prec1[0][0], input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)

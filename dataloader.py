@@ -21,12 +21,12 @@ class TextClassDataLoader(object):
         self.word_to_index = word_to_index
 
         # read file
-        if path_file.ends_with('tsv'):
+        if path_file.endswith('tsv'):
             df = pd.read_csv(path_file, delimiter='\t')
         else:
             df = pd.read_csv(path_file, delimiter=',')
-        df['recipedetail'] = df['recipedetail'].apply(ut._tokenize)
-        df['recipedetail'] = df['recipedetail'].apply(self.generate_indexifyer())
+        df['recipedetails'] = df['recipedetails'].apply(ut._tokenize)
+        df['recipedetails'] = df['recipedetails'].apply(self.generate_indexifyer())
         df['label'] = df['label'].apply(lambda x: 0 if x=='no' else 1)
         
         self.samples = df.values.tolist()
@@ -140,12 +140,12 @@ class TextClassDataLoader_multi(object):
         self.word_to_index = word_to_index
 
         # read file
-        if path_file.ends_with('tsv'):
+        if path_file.endswith('tsv'):
             df = pd.read_csv(path_file, delimiter='\t')
         else:
             df = pd.read_csv(path_file, delimiter=',')
-        df['recipedetail'] = df['recipedetail'].apply(ut._tokenize)
-        df['recipedetail'] = df['recipedetail'].apply(self.generate_indexifyer())
+        df['recipedetails'] = df['recipedetails'].apply(ut._tokenize)
+        df['recipedetails'] = df['recipedetails'].apply(self.generate_indexifyer())
         # df['label'] = df['label'].apply(lambda x: 0 if x == 'no' else 1)
 
         self.samples = df.values.tolist()
@@ -197,14 +197,14 @@ class TextClassDataLoader_multi(object):
         n = 0
         while n < self.batch_size:
             _index = self.indices[self.index]
-            batch.append(self.samples[_index])
+            batch.append([self.samples[_index][0], self.samples[_index][1:]])
             self.index += 1
             n += 1
         self.batch_index += 1
 
         # label, string = tuple(zip(*batch))
         string, label = tuple(zip(*batch))
-
+        
         # get the length of each seq in your batch
         seq_lengths = torch.LongTensor(list(map(len, string)))
 
@@ -219,7 +219,8 @@ class TextClassDataLoader_multi(object):
         seq_tensor = seq_tensor[perm_idx]
         # seq_tensor = seq_tensor.transpose(0, 1)
 
-        label = torch.LongTensor(label)
+        #label = torch.LongTensor(label)
+        label = torch.FloatTensor(label)
         label = label[perm_idx]
 
         return seq_tensor, label, seq_lengths
