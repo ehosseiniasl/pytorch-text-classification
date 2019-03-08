@@ -11,7 +11,8 @@ import torch
 from torch import nn
 import torch.backends.cudnn as cudnn
 
-from vocab import  VocabBuilder, GloveVocabBuilder
+#from vocab import  VocabBuilder, GloveVocabBuilder
+from vocab import  VocabBuilder
 from dataloader import TextClassDataLoader
 from model import RNN
 from util import AverageMeter, accuracy
@@ -34,27 +35,31 @@ parser.add_argument('--classes', default=8, type=int, metavar='N', help='number 
 parser.add_argument('--min-samples', default=5, type=int, metavar='N', help='min number of tokens')
 parser.add_argument('--cuda', default=False, action='store_true', help='use cuda')
 parser.add_argument('--glove', default='glove/glove.6B.100d.txt', help='path to glove txt')
+parser.add_argument('--data', default='data', help='path to data')
 parser.add_argument('--rnn', default='LSTM', choices=['LSTM', 'GRU'], help='rnn module type')
 parser.add_argument('--mean_seq', default=False, action='store_true', help='use mean of rnn output')
 parser.add_argument('--clip', type=float, default=0.25, help='gradient clipping')
+parser.add_argument('-m','--model', default='default', help='path to checkpoint')
 args = parser.parse_args()
+
 
 
 # create vocab
 print("===> creating vocabs ...")
 end = time.time()
 v_builder, d_word_index, embed = None, None, None
-if os.path.exists(args.glove):
-    v_builder = GloveVocabBuilder(path_glove=args.glove)
-    d_word_index, embed = v_builder.get_word_index()
-    args.embedding_size = embed.size(1)
-else:
-    v_builder = VocabBuilder(path_file='data/train.tsv')
-    d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
+#if os.path.exists(args.glove):
+#    v_builder = GloveVocabBuilder(path_glove=args.glove)
+#    d_word_index, embed = v_builder.get_word_index()
+#    args.embedding_size = embed.size(1)
+#else:
+v_builder = VocabBuilder(path_file=os.path.join(args.data, 'train.tsv'))
+d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
 
-if not os.path.exists('gen'):
-    os.mkdir('gen')
-joblib.dump(d_word_index, 'gen/d_word_index.pkl', compress=3)
+model_dir = os.path.join('checkpoints', args.model)
+if not os.path.exists(model_dir):
+    os.makedirs(model_dir, exist_ok=True)
+joblib.dump(d_word_index, os.path.join(model_dir, 'd_word_index.pkl'), compress=3)
 print('===> vocab creatin: {t:.3f}'.format(t=time.time()-end))
 
 print('args: ',args)
@@ -62,8 +67,8 @@ print('args: ',args)
 # create trainer
 print("===> creating dataloaders ...")
 end = time.time()
-train_loader = TextClassDataLoader('data/train.tsv', d_word_index, batch_size=args.batch_size)
-val_loader = TextClassDataLoader('data/test.tsv', d_word_index, batch_size=args.batch_size)
+train_loader = TextClassDataLoader(os.path.join(args.data, 'train.tsv'), d_word_index, batch_size=args.batch_size)
+val_loader = TextClassDataLoader(os.path.join(args.data, 'val.tsv'), d_word_index, batch_size=args.batch_size)
 print('===> dataloader creatin: {t:.3f}'.format(t=time.time()-end))
 
 
@@ -182,5 +187,5 @@ for epoch in range(1, args.epochs+1):
     # save current model
     if epoch % args.save_freq == 0:
         name_model = 'rnn_{}.pkl'.format(epoch)
-        path_save_model = os.path.join('gen', name_model)
+        path_save_model = os.path.join(model_dir, name_model)
         joblib.dump(model.float(), path_save_model, compress=2)

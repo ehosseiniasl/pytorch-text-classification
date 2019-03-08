@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 
 import util as ut
+import ipdb
 
 class TextClassDataLoader(object):
 
@@ -21,8 +22,10 @@ class TextClassDataLoader(object):
 
         # read file
         df = pd.read_csv(path_file, delimiter='\t')
-        df['body'] = df['body'].apply(ut._tokenize)
-        df['body'] = df['body'].apply(self.generate_indexifyer())
+        df['recipedetail'] = df['recipedetail'].apply(ut._tokenize)
+        df['recipedetail'] = df['recipedetail'].apply(self.generate_indexifyer())
+        df['label'] = df['label'].apply(lambda x: 0 if x=='no' else 1)
+        
         self.samples = df.values.tolist()
 
         # for batch
@@ -41,7 +44,8 @@ class TextClassDataLoader(object):
     def _get_max_length(self):
         length = 0
         for sample in self.samples:
-            length = max(length, len(sample[1]))
+            #length = max(length, len(sample[1]))
+            length = max(length, len(sample[0]))
         return length
 
     def generate_indexifyer(self):
@@ -76,10 +80,11 @@ class TextClassDataLoader(object):
             n += 1
         self.batch_index += 1
 
-        label, string = tuple(zip(*batch))
+        #label, string = tuple(zip(*batch))
+        string, label = tuple(zip(*batch))
 
         # get the length of each seq in your batch
-        seq_lengths = torch.LongTensor(map(len, string))
+        seq_lengths = torch.LongTensor(list(map(len, string)))
 
         # dump padding everywhere, and place seqs on the left.
         # NOTE: you only need a tensor as big as your longest sequence
