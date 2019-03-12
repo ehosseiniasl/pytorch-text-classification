@@ -123,8 +123,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
         data_time.update(time.time() - end)
 
         if args.cuda:
-            input = input.cuda(async=True)
-            target = target.cuda(async=True)
+            input = input.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
 
         # compute output
         output = model(input, seq_lengths)
@@ -169,8 +169,8 @@ def test(val_loader, model, criterion):
     for i, (input, target,seq_lengths) in enumerate(val_loader):
 
         if args.cuda:
-            input = input.cuda(async=True)
-            target = target.cuda(async=True)
+            input = input.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
 
         # compute output
         output = model(input,seq_lengths)
