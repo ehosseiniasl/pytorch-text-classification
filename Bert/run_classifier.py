@@ -207,7 +207,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
     label_map = {label : i for i, label in enumerate(label_list)}
     
     features = []
-    for (ex_index, example) in enumerate(examples):
+    for (ex_index, example) in enumerate(examples[1:]):
         tokens_a = tokenizer.tokenize(example.text_a)
 
         tokens_b = None
@@ -262,7 +262,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         assert len(input_ids) == max_seq_length
         assert len(input_mask) == max_seq_length
         assert len(segment_ids) == max_seq_length
-
+        
         label_id = label_map[example.label]
         if ex_index < 5:
             logger.info("*** Example ***")
