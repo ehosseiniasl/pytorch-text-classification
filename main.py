@@ -59,9 +59,11 @@ v_builder, d_word_index, embed = None, None, None
 if args.multi_label:
     train_file = os.path.join(args.data, 'train.csv')
     val_file = os.path.join(args.data, 'val.csv')
+    test_file = os.path.join(args.data, 'test.csv')
 else:
     train_file = os.path.join(args.data, 'train.tsv')
     val_file = os.path.join(args.data, 'val.tsv')
+    test_file = os.path.join(args.data, 'test.tsv')
     
 v_builder = VocabBuilder(path_file=train_file)
 d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
@@ -80,9 +82,11 @@ end = time.time()
 if 'question_1' in args.data:
     train_loader = TextClassDataLoader(train_file, d_word_index, batch_size=args.batch_size)
     val_loader = TextClassDataLoader(val_file, d_word_index, batch_size=args.batch_size)
+    test_loader = TextClassDataLoader(test_file, d_word_index, batch_size=args.batch_size)
 else:
     train_loader = TextClassDataLoader_multi(train_file, d_word_index, batch_size=args.batch_size)
     val_loader = TextClassDataLoader_multi(val_file, d_word_index, batch_size=args.batch_size)
+    test_loader = TextClassDataLoader_multi(test_file, d_word_index, batch_size=args.batch_size)
 print('===> dataloader creatin: {t:.3f}'.format(t=time.time()-end))
 
 
@@ -162,7 +166,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
             gc.collect()
 
 
-def test(val_loader, model, criterion):
+def validate(val_loader, model, criterion):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
@@ -204,15 +208,60 @@ def test(val_loader, model, criterion):
     return top1.avg
 
 
+def test(test_loader, model, criterion):
+    batch_time = AverageMeter()
+    losses = AverageMeter()
+    top1 = AverageMeter()
+
+    # switch to evaluate mode
+    model.eval()
+    end = time.time()
+    for i, (input, target,seq_lengths) in enumerate(val_loader):
+
+        if args.cuda:
+            input = input.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
+
+        # compute output
+        output = model(input,seq_lengths)
+        loss = criterion(output, target)
+
+        if args.multi_label:
+            prec1 = accuracy_thresh(output.data, target)
+            top1.update(prec1, input.size(0))
+        else:
+            prec1 = accuracy(output.data, target, topk=(1,))
+            top1.update(prec1[0][0], input.size(0))
+        # measure accuracy and record loss
+        #prec1 = accuracy(output.data, target, topk=(1,))
+        losses.update(loss.data, input.size(0))
+        #top1.update(prec1[0][0], input.size(0))
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+        #if i!= 0 and i % args.print_freq == 0:
+        #    print('Test: [{0}/{1}]  Time {batch_time.val:.3f} ({batch_time.avg:.3f})  '
+        #          'Loss {loss.val:.4f} ({loss.avg:.4f})  Prec@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
+        #           i, len(val_loader), batch_time=batch_time, loss=losses, top1=top1))
+        #    gc.collect()
+
+    print(' TEST Prec@1 {top1.avg:.3f}'.format(top1=top1))
+    return top1.avg
+
+
 # training and testing
 for epoch in range(1, args.epochs+1):
 
     adjust_learning_rate(args.lr, optimizer, epoch)
     train(train_loader, model, criterion, optimizer, epoch)
-    test(val_loader, model, criterion)
+    validate(val_loader, model, criterion)
 
     # save current model
     if epoch % args.save_freq == 0:
         name_model = 'rnn_{}.pkl'.format(epoch)
         path_save_model = os.path.join(model_dir, name_model)
         joblib.dump(model.float(), path_save_model, compress=2)
+
+print('testing...')
+test(test_loader, model, criterion)

@@ -1,4 +1,14 @@
 
-MODEL=question1_lstm_${2}_${3}_${4}
+GPU=$1
+EPOCHS=$2
+EMB=400
+HDD=128
+LAYER=2
+DATA=data/question_1
+RNN=LSTM
+CLASSES=2
 
-CUDA_VISIBLE_DEVICES=$1 python main.py --embedding-size $2 --hidden-size $3 --layer $4 --classes 2 --cuda --data $5 --rnn LSTM --model $MODEL 
+MODEL=question1_lstm_${EMB}_${HDD}_${LAYER}
+
+CUDA_VISIBLE_DEVICES=$GPU python main.py --embedding-size $EMB --hidden-size $HDD --layer $LAYER --classes $CLASSES --cuda --data $DATA --epochs $EPOCHS --rnn $RNN --model $MODEL --mean_seq 
+
