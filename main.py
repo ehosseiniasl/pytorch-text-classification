@@ -18,7 +18,7 @@ from model import RNN
 from util import AverageMeter, accuracy, accuracy_thresh
 from util import adjust_learning_rate
 import ipdb
-
+from glob import glob
 
 np.random.seed(0)
 torch.manual_seed(0)
@@ -56,7 +56,8 @@ v_builder, d_word_index, embed = None, None, None
 #    d_word_index, embed = v_builder.get_word_index()
 #    args.embedding_size = embed.size(1)
 #else:
-if args.multi_label:
+sample = glob(args.data+'/*')[0]
+if sample.endswith('csv'):
     train_file = os.path.join(args.data, 'train.csv')
     val_file = os.path.join(args.data, 'val.csv')
     test_file = os.path.join(args.data, 'test.csv')
@@ -79,7 +80,7 @@ print('args: ',args)
 # create trainer
 print("===> creating dataloaders ...")
 end = time.time()
-if 'question_1' in args.data:
+if not args.multi_label:
     train_loader = TextClassDataLoader(train_file, d_word_index, batch_size=args.batch_size)
     val_loader = TextClassDataLoader(val_file, d_word_index, batch_size=args.batch_size)
     test_loader = TextClassDataLoader(test_file, d_word_index, batch_size=args.batch_size)
@@ -133,7 +134,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         if args.cuda:
             input = input.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
-
+        
         # compute output
         output = model(input, seq_lengths)
         loss = criterion(output, target)
