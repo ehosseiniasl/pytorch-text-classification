@@ -46,7 +46,7 @@ savepath = os.path.dirname(filename)
 
 df = pandas.read_csv(open(filename, 'rt'))
 
-LABEL = 'S0-Q2-device' if 'Q2' in filename else 'S0-Q3-device'
+LABEL = 'S0-Q2-device' if 'Q2' in filename else 'S0-Q3-action'
 
 all_data = []
 for _, r in df.iterrows():
