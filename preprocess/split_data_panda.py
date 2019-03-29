@@ -48,21 +48,41 @@ df = pandas.read_csv(open(filename, 'rt'))
 
 LABEL = 'S0-Q2-device' if 'Q2' in filename else 'S0-Q3-action'
 
+if 'Q2' in LABEL:
+    label_set = [
+            'device_speaker_screen',
+            'device_camera',
+            'device__wearable',
+            'device_tablet',
+            'device_kitchen',
+            'device_speaker_no_screen']
+elif 'Q3' in LABEL:
+    label_set = [
+            'assist_action_ad',
+            'assist_action_image',
+            'assist_action_sub',
+            'assist_action_search',
+            'assist_action_video',
+            'assist_action_activate',
+            'assist_action_clarify'
+            ]
+
+#label_set = []
+#labels = df[LABEL]
+#for l in labels:
+#    if not isinstance(l, str):
+#        continue
+#    tmp = l.strip().split('$')
+#    for t in tmp:
+#        if t not in label_set:
+#            label_set.append(t)
+#label_set.remove('')
+#label_set.sort()
+
 all_data = []
 for _, r in df.iterrows():
     all_data.append((r['recipedetails'], r[LABEL]))
 
-label_set = []
-labels = df[LABEL]
-for l in labels:
-    if not isinstance(l, str):
-        continue
-    tmp = l.strip().split('$')
-    for t in tmp:
-        if t not in label_set:
-            label_set.append(t)
-label_set.remove('')
-label_set.sort()
 
 data_cleaned = []
 for txt, l in all_data:
@@ -113,3 +133,9 @@ with open(os.path.join(savepath, 'test.csv'), 'wt') as f:
         f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
 
 
+with open(os.path.join(savepath, 'trainval.csv'), 'wt') as f:
+    f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
+    for l in tr+vl:
+        if l[0] in ['', ' ']:
+            continue
+        f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
