@@ -58,11 +58,11 @@ v_builder, d_word_index, embed = None, None, None
 #else:
 sample = glob(args.data+'/*')[0]
 if sample.endswith('csv'):
-    train_file = os.path.join(args.data, 'train.csv')
+    train_file = os.path.join(args.data, 'trainval.csv')
     val_file = os.path.join(args.data, 'val.csv')
     test_file = os.path.join(args.data, 'test.csv')
 else:
-    train_file = os.path.join(args.data, 'train.tsv')
+    train_file = os.path.join(args.data, 'trainval.tsv')
     val_file = os.path.join(args.data, 'val.tsv')
     test_file = os.path.join(args.data, 'test.tsv')
     
