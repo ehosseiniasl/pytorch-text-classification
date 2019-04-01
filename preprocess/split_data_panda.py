@@ -46,7 +46,17 @@ savepath = os.path.dirname(filename)
 
 df = pandas.read_csv(open(filename, 'rt'))
 
-LABEL = 'S0-Q2-device' if 'Q2' in filename else 'S0-Q3-action'
+if 'Q2' in filename:
+    LABEL = 'S0-Q2-device'
+elif 'Q1' in filename:
+    if 'yesno' in filename:
+        LABEL = 'S0-Q1-yesno'
+    elif 'format' in filename:
+        LABEL = 'S0-Q1-format'
+    elif 'recom' in filename:
+        LABEL = 'S0-Q1-recom'
+else:
+    LABEL = 'S0-Q3-action'
 
 if 'Q2' in LABEL:
     label_set = [
@@ -66,6 +76,15 @@ elif 'Q3' in LABEL:
             'assist_action_activate',
             'assist_action_clarify'
             ]
+elif 'Q1' in LABEL:
+    if 'format' in LABEL:
+        label_set = [
+                'Audio',
+                'Image',
+                'Video',
+                'Text',
+                'other'
+                ]
 
 #label_set = []
 #labels = df[LABEL]
@@ -89,16 +108,19 @@ for txt, l in all_data:
     if not isinstance(l, str):
         continue
     txt_cleaned = clean_text(txt)
-    labels = l.strip().split('$')
-    labels.remove('')
-    if labels == None:
-        continue
-    label_ids = [0]*len(label_set)
+    
+    if LABEL == 'S0-Q1-yesno':
+        data_cleaned.append((txt_cleaned, l))
+    else:
+        labels = l.strip().split('$')
+        labels.remove('')
+        if labels == None:
+            continue
+        label_ids = [0]*len(label_set)
+        for l in labels:
+            label_ids[label_set.index(l)] = 1
 
-    for l in labels:
-        label_ids[label_set.index(l)] = 1
-
-    data_cleaned.append((txt_cleaned, label_ids))
+        data_cleaned.append((txt_cleaned, label_ids))
 
 read = data_cleaned
 
@@ -110,32 +132,60 @@ vl = read[train:train+val]
 ts = read[train+val:]
 
 with open(os.path.join(savepath, 'train.csv'), 'wt') as f:
-    f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
-    for l in tr:
-        if l[0] in ['', ' ']:
-            continue
-        f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    if LABEL != 'S0-Q1-yesno':
+        f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
+        for l in tr:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    else:
+        f.write('{},{}\n'.format('recipedetails', 'label'))
+        for l in tr:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], l[1]))
 
 
 with open(os.path.join(savepath, 'val.csv'), 'wt') as f:
-    f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
-    for l in vl:
-        if l[0] in ['', ' ']:
-            continue
-        f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    if LABEL != 'S0-Q1-yesno':
+        f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
+        for l in vl:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    else:
+        f.write('{},{}\n'.format('recipedetails', 'label'))
+        for l in vl:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], l[1]))
 
 
 with open(os.path.join(savepath, 'test.csv'), 'wt') as f:
-    f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
-    for l in ts:
-        if l[0] in ['', ' ']:
-            continue
-        f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    if LABEL != 'S0-Q1-yesno':
+        f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
+        for l in ts:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    else:
+        f.write('{},{}\n'.format('recipedetails', 'label'))
+        for l in ts:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], l[1]))
 
 
 with open(os.path.join(savepath, 'trainval.csv'), 'wt') as f:
-    f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
-    for l in tr+vl:
-        if l[0] in ['', ' ']:
-            continue
-        f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    if LABEL != 'S0-Q1-yesno':
+        f.write('{},{}\n'.format('recipedetails', ','.join(label_set)))
+        for l in tr+vl:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], ','.join(map(str, l[1]))))
+    else:
+        f.write('{},{}\n'.format('recipedetails', 'label'))
+        for l in tr+vl:
+            if l[0] in ['', ' ']:
+                continue
+            f.write('{},{}\n'.format(l[0], l[1]))

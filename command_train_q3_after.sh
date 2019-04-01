@@ -5,7 +5,7 @@ EMB=400
 HDD=128
 LAYER=2
 #DATA=data/question_3
-DATA=data/Q3-action-elno_cleaned_data_current
+DATA=data/Q3-action-elno_cleaned_data_after
 RNN=LSTM
 CLASSES=7
 

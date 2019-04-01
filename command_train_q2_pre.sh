@@ -2,10 +2,10 @@
 GPU=$1
 EPOCHS=$2
 EMB=400
-HDD=256
+HDD=128
 LAYER=2
 #DATA=data/question_2
-DATA=data/Q2-device-elno_cleaned_data_current
+DATA=data/Q2-device-elno_cleaned_data_pre
 RNN=LSTM
 CLASSES=6
 BATCH=128

@@ -4,7 +4,8 @@ EPOCHS=$2
 EMB=400
 HDD=128
 LAYER=2
-DATA=data/elno_cleaned_data_pre
+#DATA=data/elno_cleaned_data_pre
+DATA=data/Q1-yesno-elno_cleaned_data_pre
 RNN=LSTM
 CLASSES=2
 

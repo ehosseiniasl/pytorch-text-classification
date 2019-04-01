@@ -1,10 +1,11 @@
 
 GPU=$1
 EPOCHS=$2
-EMB=50
+EMB=400
 HDD=128
 LAYER=2
-DATA=data/elno_cleaned_data_current
+#DATA=data/elno_cleaned_data_current
+DATA=data/Q1-yesno-elno_cleaned_data_current
 RNN=LSTM
 CLASSES=2
 
