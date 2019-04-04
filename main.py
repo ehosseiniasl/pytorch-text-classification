@@ -11,8 +11,8 @@ import torch
 from torch import nn
 import torch.backends.cudnn as cudnn
 
-#from vocab import  VocabBuilder, GloveVocabBuilder
-from vocab import  VocabBuilder
+from vocab import  VocabBuilder, GloveVocabBuilder
+#from vocab import  VocabBuilder
 from dataloader import TextClassDataLoader, TextClassDataLoader_multi
 from model import RNN
 from util import AverageMeter, accuracy, accuracy_thresh
@@ -50,12 +50,16 @@ args = parser.parse_args()
 # create vocab
 print("===> creating vocabs ...")
 end = time.time()
+
 v_builder, d_word_index, embed = None, None, None
-#if os.path.exists(args.glove):
-#    v_builder = GloveVocabBuilder(path_glove=args.glove)
-#    d_word_index, embed = v_builder.get_word_index()
-#    args.embedding_size = embed.size(1)
-#else:
+if os.path.exists(args.glove):
+    v_builder = GloveVocabBuilder(path_glove=args.glove)
+    d_word_index, embed = v_builder.get_word_index()
+    args.embedding_size = embed.size(1)
+else:
+    v_builder = VocabBuilder(path_file=train_file)
+    d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
+
 sample = glob(args.data+'/*')[0]
 if sample.endswith('csv'):
     train_file = os.path.join(args.data, 'trainval.csv')
@@ -66,8 +70,7 @@ else:
     val_file = os.path.join(args.data, 'val.tsv')
     test_file = os.path.join(args.data, 'test.tsv')
     
-v_builder = VocabBuilder(path_file=train_file)
-d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
+#d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
 
 model_dir = os.path.join('checkpoints', args.model)
 if not os.path.exists(model_dir):
