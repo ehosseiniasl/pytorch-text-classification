@@ -8,8 +8,9 @@ LAYER=2
 DATA=data/Q1-yesno-elno_cleaned_data_pre
 RNN=LSTM
 CLASSES=2
-
+BATCH=16
 MODEL=question1_lstm_${EMB}_${HDD}_${LAYER}
 
-CUDA_VISIBLE_DEVICES=$GPU python main.py --embedding-size $EMB --hidden-size $HDD --layer $LAYER --classes $CLASSES --cuda --data $DATA --epochs $EPOCHS --rnn $RNN --model $MODEL --mean_seq 
+CUDA_VISIBLE_DEVICES=$GPU python main.py --embedding-size $EMB --hidden-size $HDD --layer $LAYER --classes $CLASSES --cuda --data $DATA --epochs $EPOCHS --rnn $RNN --model $MODEL --batch-size $BATCH --use_glove --glove $3 
+#--mean_seq 
 

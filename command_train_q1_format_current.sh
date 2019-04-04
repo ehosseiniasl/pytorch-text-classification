@@ -12,6 +12,5 @@ BATCH=16
 
 MODEL=elno_cleaned_data_current_lstm_${EMB}_${HDD}_${LAYER}
 
-CUDA_VISIBLE_DEVICES=$GPU python main.py --embedding-size $EMB --hidden-size $HDD --layer $LAYER --classes $CLASSES --cuda --data $DATA --epochs $EPOCHS --rnn $RNN --model $MODEL --multi_label --batch-size $BATCH 
-#--mean_seq 
+CUDA_VISIBLE_DEVICES=$GPU python main.py --embedding-size $EMB --hidden-size $HDD --layer $LAYER --classes $CLASSES --cuda --data $DATA --epochs $EPOCHS --rnn $RNN --model $MODEL --multi_label --batch-size $BATCH --use_glove --glove $3 --mean_seq 
 
