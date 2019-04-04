@@ -28,7 +28,8 @@ class RNN(nn.Module):
         self.encoder = None
         if torch.is_tensor(embedding_tensor):
             self.encoder = nn.Embedding(vocab_size, embed_size, padding_idx=padding_index, _weight=embedding_tensor)
-            self.encoder.weight.requires_grad = False
+            #self.encoder.weight.requires_grad = False
+            self.encoder.weight.requires_grad = True
         else:
             self.encoder = nn.Embedding(vocab_size, embed_size, padding_idx=padding_index)
 

@@ -36,7 +36,10 @@ parser.add_argument('--layers', default=2, type=int, metavar='N', help='number o
 parser.add_argument('--classes', default=8, type=int, metavar='N', help='number of output classes')
 parser.add_argument('--min-samples', default=5, type=int, metavar='N', help='min number of tokens')
 parser.add_argument('--cuda', default=False, action='store_true', help='use cuda')
-parser.add_argument('--glove', default='glove/glove.6B.100d.txt', help='path to glove txt')
+parser.add_argument('--use_glove', default=False, action='store_true', help='use glove')
+parser.add_argument('--glove', default=100, type=int, help='path to glove txt')
+
+#parser.add_argument('--glove', default='glove/glove.6B.100d.txt', help='path to glove txt')
 parser.add_argument('--data', default='data', help='path to data')
 parser.add_argument('--rnn', default='LSTM', choices=['LSTM', 'GRU'], help='rnn module type')
 parser.add_argument('--mean_seq', default=False, action='store_true', help='use mean of rnn output')
@@ -52,8 +55,10 @@ print("===> creating vocabs ...")
 end = time.time()
 
 v_builder, d_word_index, embed = None, None, None
-if os.path.exists(args.glove):
-    v_builder = GloveVocabBuilder(path_glove=args.glove)
+#if os.path.exists(args.glove):
+if args.use_glove:
+    glove_file = 'glove/glove.6B.{}d.txt'.format(args.glove)
+    v_builder = GloveVocabBuilder(path_glove=glove_file)
     d_word_index, embed = v_builder.get_word_index()
     args.embedding_size = embed.size(1)
 else:
@@ -263,9 +268,12 @@ for epoch in range(1, args.epochs+1):
 
     # save current model
     if epoch % args.save_freq == 0:
-        name_model = 'rnn_{}.pkl'.format(epoch)
+        #name_model = 'rnn_{}.pkl'.format(epoch)
+        #path_save_model = os.path.join(model_dir, name_model)
+        #joblib.dump(model.float(), path_save_model, compress=2)
+        name_model = 'rnn_{}.pth'.format(epoch)
         path_save_model = os.path.join(model_dir, name_model)
-        joblib.dump(model.float(), path_save_model, compress=2)
+        torch.save(model.state_dict(), path_save_model)
 
 print('testing...')
 test(test_loader, model, criterion)
