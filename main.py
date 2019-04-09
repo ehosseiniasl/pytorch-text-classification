@@ -54,6 +54,16 @@ args = parser.parse_args()
 print("===> creating vocabs ...")
 end = time.time()
 
+sample = glob(args.data+'/*')[0]
+if sample.endswith('csv'):
+    train_file = os.path.join(args.data, 'trainval.csv')
+    val_file = os.path.join(args.data, 'val.csv')
+    test_file = os.path.join(args.data, 'test.csv')
+else:
+    train_file = os.path.join(args.data, 'trainval.tsv')
+    val_file = os.path.join(args.data, 'val.tsv')
+    test_file = os.path.join(args.data, 'test.tsv')
+
 v_builder, d_word_index, embed = None, None, None
 #if os.path.exists(args.glove):
 if args.use_glove:
@@ -65,15 +75,6 @@ else:
     v_builder = VocabBuilder(path_file=train_file)
     d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
 
-sample = glob(args.data+'/*')[0]
-if sample.endswith('csv'):
-    train_file = os.path.join(args.data, 'trainval.csv')
-    val_file = os.path.join(args.data, 'val.csv')
-    test_file = os.path.join(args.data, 'test.csv')
-else:
-    train_file = os.path.join(args.data, 'trainval.tsv')
-    val_file = os.path.join(args.data, 'val.tsv')
-    test_file = os.path.join(args.data, 'test.tsv')
     
 #d_word_index, embed = v_builder.get_word_index(min_sample=args.min_samples)
 
