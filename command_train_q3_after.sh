@@ -12,5 +12,6 @@ CLASSES=7
 MODEL=question2_lstm_${EMB}_${HDD}_${LAYER}
 #MODEL=question3_lstm_${2}_${3}_${4}
 
-CUDA_VISIBLE_DEVICES=$GPU python main.py --embedding-size $EMB --hidden-size $HDD --layer $LAYER --classes $CLASSES --cuda --data $DATA --rnn $RNN --model $MODEL --multi_label --mean_seq 
+CUDA_VISIBLE_DEVICES=$GPU python main.py --embedding-size $EMB --hidden-size $HDD --layer $LAYER --classes $CLASSES --cuda --data $DATA --rnn $RNN --model $MODEL --multi_label --use_glove --glove $3 
+#--mean_seq 
 
