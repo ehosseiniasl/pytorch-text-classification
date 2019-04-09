@@ -180,7 +180,7 @@ class ColaProcessor(DataProcessor):
     def get_dev_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
+            self._read_tsv(os.path.join(data_dir, "val.tsv")), "dev")
 
     def get_labels(self):
         """See base class."""
@@ -207,7 +207,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
     label_map = {label : i for i, label in enumerate(label_list)}
     
     features = []
-    for (ex_index, example) in enumerate(examples):
+    for (ex_index, example) in enumerate(examples[1:]):
         tokens_a = tokenizer.tokenize(example.text_a)
 
         tokens_b = None
