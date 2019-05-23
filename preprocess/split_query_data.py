@@ -106,6 +106,13 @@ tr = read[:train]
 vl = read[train:train+val]
 ts = read[train+val:]
 
+
+with open(os.path.join(savepath, 'all.csv'), 'wt') as f:
+    f.write('{},{}\n'.format('step_query_question', 'information'))
+    for l in read:
+        f.write('{},{}\n'.format(l[0] + ' ' + l[1] + ' ' + l[2], l[-1]))
+
+
 with open(os.path.join(savepath, 'train_step.csv'), 'wt') as f:
     f.write('{},{}\n'.format('step', 'information'))
     for l in tr:
